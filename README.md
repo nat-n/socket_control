@@ -30,4 +30,4 @@ pi (and *Add to home screen* if you're on IOS).
 
 Voilà!
 
-![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.PNG)
