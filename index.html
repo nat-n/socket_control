@@ -1,0 +1,185 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Socket Control">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+  <title>Socket Control</title>
+</head>
+<body>
+
+<div class="container">
+  <br>
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="panel panel-primary">
+
+        <div class="panel-heading">
+          <h3 class="panel-title" style="color: white;">Socket Control</h3>
+        </div>
+
+        <ul class="list-group">
+          <li id="toggle-1" class="list-group-item">
+            <div class="btn-group pull-right">
+              <button id="on-1"  type="button" class="btn btn-default">On</button>
+              <button id="off-1" type="button" class="btn btn-default">Off</button>
+            </div>
+            <h5>Socket 1 (Amp)</h5>
+          </li>
+
+          <li id="toggle-2" class="list-group-item">
+            <div class="btn-group pull-right">
+              <button id="on-2"  type="button" class="btn btn-default">On</button>
+              <button id="off-2" type="button" class="btn btn-default">Off</button>
+            </div>
+            <h5>Socket 2 (Nothing)</h5>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+
+    // This function saves on having to load jquery mobile or some other bloat
+    function bind_tap(el, cb) {
+      (function(){
+        var touchStarted = false;
+        el.addEventListener("click", cb, false);
+        el.addEventListener("touchstart", function(){
+          touchStarted = true;
+        }, false);
+        el.addEventListener("touchcancel", function(){
+          touchStarted = false;
+        }, false);
+        el.addEventListener("touchleave", function(){
+          touchStarted = false;
+        }, false);
+        el.addEventListener("touchend", function(){
+          touchStarted = false;
+          if (touchStarted) cb();
+        }, false);
+      })();
+    };
+
+    // State tracking, should mirror the backend
+    var state = {
+      socket1: null,
+      socket2: null
+    };
+
+    // Cache DOM elements
+    var elems = {
+      on1: document.getElementById('on-1'),
+      off1: document.getElementById('off-1'),
+      toggle1: document.getElementById('toggle-1'),
+      on2: document.getElementById('on-2'),
+      off2: document.getElementById('off-2'),
+      toggle2: document.getElementById('toggle-2')
+    }
+
+    // Updates state and display, in response to updates from the backend
+    function callback(response) {
+      state.socket1 = response.socket1
+      state.socket2 = response.socket2
+      if (state.socket1) {
+        elems.on1.classList.add("btn-success");
+        elems.off1.classList.remove("btn-danger");
+      } else {
+        elems.on1.classList.remove("btn-success");
+        elems.off1.classList.add("btn-danger");
+
+      }
+      if (state.socket2) {
+        elems.on2.classList.add("btn-success");
+        elems.off2.classList.remove("btn-danger");
+      } else {
+        elems.on2.classList.remove("btn-success");
+        elems.off2.classList.add("btn-danger");
+
+      }
+    };
+
+    // initialise state
+    $.get("/status", null, callback);
+
+    var set = {
+      1: function(val) {
+        if (val) {
+          $.get("/1/1", null, callback);
+        } else {
+          $.get("/1/0", null, callback);
+        }
+      },
+      2: function(val) {
+        if (val) {
+          $.get("/2/1", null, callback);
+        } else {
+          $.get("/2/0", null, callback);
+        }
+      }
+    };
+
+    var toggle = {
+      1: function() {
+        set[1](!state.socket1);
+      },
+      2: function() {
+        set[2](!state.socket2);
+      }
+    }
+
+    // Bind interaction listeners to controls
+
+    bind_tap(elems.on1, function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      set[1](1);
+      this.blur()
+    });
+
+    bind_tap(elems.off1, function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      set[1](0);
+      this.blur()
+    });
+
+    bind_tap(elems.toggle1, function(event) {
+      event.preventDefault();
+      toggle[1]();
+    });
+
+    bind_tap(elems.on2, function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      set[2](1);
+      this.blur()
+    });
+
+    bind_tap(elems.off2, function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      set[2](0);
+      this.blur()
+    });
+
+    bind_tap(elems.toggle2, function(event) {
+      event.preventDefault();
+      toggle[2]();
+    });
+
+  })()
+</script>
+
+</body>
+</html>
