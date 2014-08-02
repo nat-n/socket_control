@@ -19,15 +19,20 @@ control two energenie RC power sockets, from a mobile friendly web interface.
 Follow these instructions to get started with the energenie RC sockets and
 Pimote Raspberry Pi Extension.
 
+    # fetch dependencies
     sudo apt-get install python-rpi.gpio
     pip install bottle
+
+    # get socket_control
     git clone https://github.com/nat-n/socket_control.git
     cd socket_control
+
+    # run it (as root because GPIO requires it)
     sudo ./app.py
 
-Once the app has started, in your web browser visit port 8080 on your raspbery
-pi (and *Add to home screen* if you're on IOS).
+Once the app has started, open your web browser and visit port 8080 at your
+raspbery pi's IP address (and *Add to home screen* if you're on IOS).
 
 Voilà!
 
-![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.PNG)
+![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.png)

@@ -8,13 +8,15 @@ from bottle import route, run, static_file
 # Setup
 
 pimote.init()
-pimote.both_off()
+pimote.switch('all-off')
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 STATE = {
-    'socket1': False,
-    'socket2': False
+    1: False,
+    2: False,
+    3: False,
+    4: False,
 }
 
 
@@ -32,33 +34,49 @@ def status():
 
 @route('/1/0')
 def socket1on():
-    print STATE
-    STATE['socket1'] = not pimote.one_off()
-    print STATE
+    STATE[1] = not pimote.switch('1-off')
     return STATE
 
 
 @route('/1/1')
 def socket2off():
-    print STATE
-    STATE['socket1'] = pimote.one_on()
-    print STATE
+    STATE[1] = pimote.switch('1-on')
     return STATE
 
 
 @route('/2/0')
 def socket1on():
-    print STATE
-    STATE['socket2'] = not pimote.two_off()
-    print STATE
+    STATE[2] = not pimote.switch('2-off')
     return STATE
 
 
 @route('/2/1')
 def socket2off():
-    print STATE
-    STATE['socket2'] = pimote.two_on()
-    print STATE
+    STATE[2] = pimote.switch('2-on')
+    return STATE
+
+
+@route('/3/0')
+def socket1on():
+    STATE[3] = not pimote.switch('3-off')
+    return STATE
+
+
+@route('/3/1')
+def socket2off():
+    STATE[3] = pimote.switch('3-on')
+    return STATE
+
+
+@route('/4/0')
+def socket1on():
+    STATE[4] = not pimote.switch('4-off')
+    return STATE
+
+
+@route('/4/1')
+def socket2off():
+    STATE[4] = pimote.switch('4-on')
     return STATE
 
 

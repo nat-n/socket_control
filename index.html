@@ -25,20 +25,36 @@
         </div>
 
         <ul class="list-group">
-          <li id="toggle-1" class="list-group-item">
+          <li id="control-1" class="list-group-item">
             <div class="btn-group pull-right">
-              <button id="on-1"  type="button" class="btn btn-default">On</button>
-              <button id="off-1" type="button" class="btn btn-default">Off</button>
+              <button type="button" class="on btn btn-default">On</button>
+              <button type="button" class="off btn btn-default">Off</button>
             </div>
             <h5>Socket 1 (Amp)</h5>
           </li>
 
-          <li id="toggle-2" class="list-group-item">
+          <li id="control-2" class="list-group-item">
             <div class="btn-group pull-right">
-              <button id="on-2"  type="button" class="btn btn-default">On</button>
-              <button id="off-2" type="button" class="btn btn-default">Off</button>
+              <button type="button" class="on btn btn-default">On</button>
+              <button type="button" class="off btn btn-default">Off</button>
             </div>
-            <h5>Socket 2 (Nothing)</h5>
+            <h5>Socket 2 (Unassigned)</h5>
+          </li>
+
+          <li id="control-3" class="list-group-item">
+            <div class="btn-group pull-right">
+              <button type="button" class="on btn btn-default">On</button>
+              <button type="button" class="off btn btn-default">Off</button>
+            </div>
+            <h5>Socket 3 (Unassigned)</h5>
+          </li>
+
+          <li id="control-4" class="list-group-item">
+            <div class="btn-group pull-right">
+              <button type="button" class="on btn btn-default">On</button>
+              <button type="button" class="off btn btn-default">Off</button>
+            </div>
+            <h5>Socket 4 (Unassigned)</h5>
           </li>
         </ul>
 
@@ -48,137 +64,103 @@
 </div>
 
 <script>
-  (function(){
+(function(){
+  var state, elems, control, i, control_count = 4;
 
-    // This function saves on having to load jquery mobile or some other bloat
-    function bind_tap(el, cb) {
-      (function(){
-        var touchStarted = false;
-        el.addEventListener("click", cb, false);
-        el.addEventListener("touchstart", function(){
-          touchStarted = true;
-        }, false);
-        el.addEventListener("touchcancel", function(){
-          touchStarted = false;
-        }, false);
-        el.addEventListener("touchleave", function(){
-          touchStarted = false;
-        }, false);
-        el.addEventListener("touchend", function(){
-          touchStarted = false;
-          if (touchStarted) cb();
-        }, false);
-      })();
-    };
+  // State tracking, should mirror the backend
+  state = [];
 
-    // State tracking, should mirror the backend
-    var state = {
-      socket1: null,
-      socket2: null
-    };
+  // Cache DOM elements
+  elems = {};
+  for (i = 1; i <= control_count; i++) {
+    elems[i] = {};
+    control = document.getElementById('control-' + i);
+    elems[i].on =     control.getElementsByClassName('on')[0];
+    elems[i].off =    control.getElementsByClassName('off')[0];
+    elems[i].toggle = control;
+  }
 
-    // Cache DOM elements
-    var elems = {
-      on1: document.getElementById('on-1'),
-      off1: document.getElementById('off-1'),
-      toggle1: document.getElementById('toggle-1'),
-      on2: document.getElementById('on-2'),
-      off2: document.getElementById('off-2'),
-      toggle2: document.getElementById('toggle-2')
-    }
-
-    // Updates state and display, in response to updates from the backend
-    function callback(response) {
-      state.socket1 = response.socket1
-      state.socket2 = response.socket2
-      if (state.socket1) {
-        elems.on1.classList.add("btn-success");
-        elems.off1.classList.remove("btn-danger");
+  // Updates state and display, in response to updates from the backend
+  function callback(response) {
+    for (var i = 1; i <= control_count; i++) {
+      state[i] = response[i]
+      if (state[i]) {
+        elems[i].on.classList.add("btn-success");
+        elems[i].off.classList.remove("btn-danger");
       } else {
-        elems.on1.classList.remove("btn-success");
-        elems.off1.classList.add("btn-danger");
-
+        elems[i].on.classList.remove("btn-success");
+        elems[i].off.classList.add("btn-danger");
       }
-      if (state.socket2) {
-        elems.on2.classList.add("btn-success");
-        elems.off2.classList.remove("btn-danger");
+    };
+  };
+
+  // Initialise state
+  $.get("/status", null, callback);
+
+  // Request the server set a socket to on or off
+  function set(number, on) {
+    if (number === parseInt(number) &&
+        number >= 1 &&
+        number <= control_count) {
+      if (on) {
+        $.get("/" + number + "/1", null, callback);
       } else {
-        elems.on2.classList.remove("btn-success");
-        elems.off2.classList.add("btn-danger");
-
-      }
-    };
-
-    // initialise state
-    $.get("/status", null, callback);
-
-    var set = {
-      1: function(val) {
-        if (val) {
-          $.get("/1/1", null, callback);
-        } else {
-          $.get("/1/0", null, callback);
-        }
-      },
-      2: function(val) {
-        if (val) {
-          $.get("/2/1", null, callback);
-        } else {
-          $.get("/2/0", null, callback);
-        }
-      }
-    };
-
-    var toggle = {
-      1: function() {
-        set[1](!state.socket1);
-      },
-      2: function() {
-        set[2](!state.socket2);
+        $.get("/" + number + "/0", null, callback);
       }
     }
+  };
 
-    // Bind interaction listeners to controls
+  // Request the server set a socket to the opposite of its last known state
+  function toggle(number) {
+    set(number, !state[number]);
+  };
 
-    bind_tap(elems.on1, function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      set[1](1);
-      this.blur()
-    });
+  // This function saves on having to load jquery mobile or some other bloat
+  function bind_tap(el, cb, useCapture) {
+    (function(el, cb, useCapture){
+      useCapture = !!useCapture;
+      var touchStarted = false;
+      el.addEventListener("click", cb, useCapture);
+      el.addEventListener("touchstart", function(){
+        touchStarted = true;
+      }, useCapture);
+      el.addEventListener("touchcancel", function(){
+        touchStarted = false;
+      }, useCapture);
+      el.addEventListener("touchleave", function(){
+        touchStarted = false;
+      }, useCapture);
+      el.addEventListener("touchend", function(){
+        touchStarted = false;
+        if (touchStarted) cb();
+      }, useCapture);
+    })(el, cb, useCapture);
+  };
 
-    bind_tap(elems.off1, function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      set[1](0);
-      this.blur()
-    });
+  // Bind interaction listeners to controls
+  for (i = 1; i <= control_count; i++) {
+    (function(i) {
+      bind_tap(elems[i].on, function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        set(i, 1);
+        this.blur()
+      });
+      bind_tap(elems[i].off, function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        set(i, 0);
+        this.blur()
+      });
+      bind_tap(elems[i].toggle, function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggle(i);
+      });
+    })(i)
+  };
 
-    bind_tap(elems.toggle1, function(event) {
-      event.preventDefault();
-      toggle[1]();
-    });
-
-    bind_tap(elems.on2, function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      set[2](1);
-      this.blur()
-    });
-
-    bind_tap(elems.off2, function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      set[2](0);
-      this.blur()
-    });
-
-    bind_tap(elems.toggle2, function(event) {
-      event.preventDefault();
-      toggle[2]();
-    });
-
-  })()
+})()
 </script>
 
 </body>
