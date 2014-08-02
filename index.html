@@ -83,7 +83,7 @@
   // Updates state and display, in response to updates from the backend
   function callback(response) {
     for (var i = 1; i <= control_count; i++) {
-      state[i] = response[i]
+      state[i] = response[i];
       if (state[i]) {
         elems[i].on.classList.add("btn-success");
         elems[i].off.classList.remove("btn-danger");
