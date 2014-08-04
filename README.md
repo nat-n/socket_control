@@ -3,7 +3,8 @@ socket_control
 
 A tiny web app to run on a Raspberry Pi with a
 [pimote](https://energenie4u.co.uk/index.php/catalogue/product/ENER002-2PI) to
-control two energenie RC power sockets, from a mobile friendly web interface.
+seperately control up to four energenie RC power sockets, from a mobile friendly
+web interface.
 
 ## Contents
 

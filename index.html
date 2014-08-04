@@ -64,103 +64,113 @@
 </div>
 
 <script>
-(function(){
-  var state, elems, control, i, control_count = 4;
+(function (document, $) {
+    'use strict';
+    var state, elems, control, i, control_count = 4;
 
-  // State tracking, should mirror the backend
-  state = [];
+    // State tracking, should mirror the backend
+    state = [];
 
-  // Cache DOM elements
-  elems = {};
-  for (i = 1; i <= control_count; i++) {
-    elems[i] = {};
-    control = document.getElementById('control-' + i);
-    elems[i].on =     control.getElementsByClassName('on')[0];
-    elems[i].off =    control.getElementsByClassName('off')[0];
-    elems[i].toggle = control;
-  }
-
-  // Updates state and display, in response to updates from the backend
-  function callback(response) {
-    for (var i = 1; i <= control_count; i++) {
-      state[i] = response[i];
-      if (state[i]) {
-        elems[i].on.classList.add("btn-success");
-        elems[i].off.classList.remove("btn-danger");
-      } else {
-        elems[i].on.classList.remove("btn-success");
-        elems[i].off.classList.add("btn-danger");
-      }
-    };
-  };
-
-  // Initialise state
-  $.get("/status", null, callback);
-
-  // Request the server set a socket to on or off
-  function set(number, on) {
-    if (number === parseInt(number) &&
-        number >= 1 &&
-        number <= control_count) {
-      if (on) {
-        $.get("/" + number + "/1", null, callback);
-      } else {
-        $.get("/" + number + "/0", null, callback);
-      }
+    // Cache DOM elements
+    elems = {};
+    for (i = 1; i <= control_count; i += 1) {
+        elems[i] = {};
+        control = document.getElementById('control-' + i);
+        elems[i].on =     control.getElementsByClassName('on')[0];
+        elems[i].off =    control.getElementsByClassName('off')[0];
+        elems[i].toggle = control;
     }
-  };
 
-  // Request the server set a socket to the opposite of its last known state
-  function toggle(number) {
-    set(number, !state[number]);
-  };
+    // Updates state and display, in response to updates from the backend
+    function callback(response) {
+        var j;
+        for (j = 1; j <= control_count; j += 1) {
+            state[j] = response[j];
+            if (state[j]) {
+                elems[j].on.classList.add("btn-success");
+                elems[j].off.classList.remove("btn-danger");
+            } else {
+                elems[j].on.classList.remove("btn-success");
+                elems[j].off.classList.add("btn-danger");
+            }
+        }
+    }
 
-  // This function saves on having to load jquery mobile or some other bloat
-  function bind_tap(el, cb, useCapture) {
-    (function(el, cb, useCapture){
-      useCapture = !!useCapture;
-      var touchStarted = false;
-      el.addEventListener("click", cb, useCapture);
-      el.addEventListener("touchstart", function(){
-        touchStarted = true;
-      }, useCapture);
-      el.addEventListener("touchcancel", function(){
-        touchStarted = false;
-      }, useCapture);
-      el.addEventListener("touchleave", function(){
-        touchStarted = false;
-      }, useCapture);
-      el.addEventListener("touchend", function(){
-        touchStarted = false;
-        if (touchStarted) cb();
-      }, useCapture);
-    })(el, cb, useCapture);
-  };
+    // Initialise state
+    $.get("/status", null, callback);
 
-  // Bind interaction listeners to controls
-  for (i = 1; i <= control_count; i++) {
-    (function(i) {
-      bind_tap(elems[i].on, function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        set(i, 1);
-        this.blur()
-      });
-      bind_tap(elems[i].off, function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        set(i, 0);
-        this.blur()
-      });
-      bind_tap(elems[i].toggle, function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        toggle(i);
-      });
-    })(i)
-  };
+    // Request the server set a socket to on or off
+    function set(number, on) {
+        if (number === parseInt(number, 10) &&
+                number >= 1 &&
+                number <= control_count) {
+            if (on) {
+                $.get("/" + number + "/1", null, callback);
+            } else {
+                $.get("/" + number + "/0", null, callback);
+            }
+        }
+    }
 
-})()
+    // Request the server set a socket to the opposite of its last known state
+    function toggle(number) {
+        set(number, !state[number]);
+    }
+
+    // This function saves on having to load jquery mobile or some other bloat
+    function bindTap(element, callback, useCapture) {
+        var touchStarted = false, touchFinished = null;
+        useCapture = !!useCapture;
+        function startTap() {
+            touchStarted = true;
+            touchFinished = false;
+        }
+        function cancelTap() {
+            touchStarted = false;
+        }
+        function completeTap() {
+            if (touchStarted && !touchFinished) {
+                callback.apply(this, arguments);
+                touchFinished = true;
+            }
+        }
+        function handleClick() {
+            touchStarted = true;
+            touchFinished = false;
+            completeTap.apply(this, arguments);
+        }
+        element.addEventListener("click", handleClick, useCapture);
+        element.addEventListener("touchstart", startTap, useCapture);
+        element.addEventListener("touchcancel", cancelTap, useCapture);
+        element.addEventListener("touchleave", cancelTap, useCapture);
+        element.addEventListener("touchend", completeTap, useCapture);
+    }
+
+    // Bind interaction listeners to controls
+    function bindingClosure(i) {
+        bindTap(elems[i].on, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            set(i, 1);
+            this.blur();
+        });
+        bindTap(elems[i].off, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            set(i, 0);
+            this.blur();
+        });
+        bindTap(elems[i].toggle, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            toggle(i);
+        });
+    }
+    for (i = 1; i <= control_count; i += 1) {
+        bindingClosure(i);
+    }
+
+}(document, $));
 </script>
 
 </body>
