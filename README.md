@@ -35,10 +35,10 @@ Pimote Raspberry Pi Extension.
 Once the app has started, open your web browser and visit port 8080 at your
 raspbery pi's IP address (and *Add to home screen* if you're on IOS).
 You can also access the API directly from the command line on in a script or
-crontab task using wget like:
+crontab task using curl like:
 
-    wget http://<socket_control_host>/1/1 --delete-after  # turn socket one on
-    wget http://<socket_control_host>/1/0 --delete-after  # turn socket one off
+    curl http://<socket_control_host>/1/1  # turn socket one on
+    curl http://<socket_control_host>/1/0  # turn socket one off
 
 Voilà!
 
