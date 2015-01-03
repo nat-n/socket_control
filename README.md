@@ -34,14 +34,12 @@ Pimote Raspberry Pi Extension.
 
 Once the app has started, open your web browser and visit port 8080 at your
 raspbery pi's IP address (and *Add to home screen* if you're on IOS).
+You can also access the API directly from the command line on in a script or
+crontab task using wget like:
+
+    wget http://<socket_control_host>/1/1 --delete-after  # turn socket one on
+    wget http://<socket_control_host>/1/0 --delete-after  # turn socket one on
 
 Voilà!
 
 ![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.png)
-
-## Crontab
-
-Alternatively you can access the API directly to change socket status using wget
-from the command line or simple crontab jobs e.g.
- - **40 14 * * * wget http://<socket_control_host>/1/1 --delete-after  # turn socket one on at 14:40
- - **40 15 * * * wget http://<socket_control_host>/1/0 --delete-after  # turn socket one off at 15:40
