@@ -35,8 +35,8 @@ Pimote Raspberry Pi Extension.
 ## Crontab
 
  Create simple crontab jobs to change socket status i.e
- - **40 15 * * * wget http://<ip>/1/1 --delete-after #turn socket one on 3.40**
- - **40 15 * * * wget http://<ip>/1/0 --delete-after #turn socket one off 3.40**
+ - **40 15 * * * wget http://ip/1/1 --delete-after #turn socket one on 3.40**
+ - **40 15 * * * wget http://ip/1/0 --delete-after #turn socket one off 3.40**
 
 Once the app has started, open your web browser and visit port 8080 at your
 raspbery pi's IP address (and *Add to home screen* if you're on IOS).
