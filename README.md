@@ -38,7 +38,7 @@ You can also access the API directly from the command line on in a script or
 crontab task using wget like:
 
     wget http://<socket_control_host>/1/1 --delete-after  # turn socket one on
-    wget http://<socket_control_host>/1/0 --delete-after  # turn socket one on
+    wget http://<socket_control_host>/1/0 --delete-after  # turn socket one off
 
 Voilà!
 
