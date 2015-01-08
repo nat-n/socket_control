@@ -33,49 +33,49 @@ def status():
 
 
 @route('/1/0')
-def socket1on():
+def socket1off():
     STATE[1] = not pimote.switch('1-off')
     return STATE
 
 
 @route('/1/1')
-def socket2off():
+def socket1on():
     STATE[1] = pimote.switch('1-on')
     return STATE
 
 
 @route('/2/0')
-def socket1on():
+def socket2off():
     STATE[2] = not pimote.switch('2-off')
     return STATE
 
 
 @route('/2/1')
-def socket2off():
+def socket2on():
     STATE[2] = pimote.switch('2-on')
     return STATE
 
 
 @route('/3/0')
-def socket1on():
+def socket3off():
     STATE[3] = not pimote.switch('3-off')
     return STATE
 
 
 @route('/3/1')
-def socket2off():
+def socket3on():
     STATE[3] = pimote.switch('3-on')
     return STATE
 
 
 @route('/4/0')
-def socket1on():
+def socket4off():
     STATE[4] = not pimote.switch('4-off')
     return STATE
 
 
 @route('/4/1')
-def socket2off():
+def socket4on():
     STATE[4] = pimote.switch('4-on')
     return STATE
 
