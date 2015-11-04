@@ -1,87 +1,57 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import os
-import pimote
+import os, json
+from lib.socket_controller import SocketController
 from bottle import route, run, static_file
+import config
 
+ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
+STATIC_PATH = ROOT_PATH + '/client'
 
-# Setup
+sc = SocketController(config)
 
-pimote.init()
-pimote.switch('all-off')
-
-ROOT_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
-
-STATE = {
-    1: False,
-    2: False,
-    3: False,
-    4: False,
-}
-
-
-# Declare Endpoints
 
 @route('/')
 def index():
-    return static_file("index.html", root=ROOT_PATH)
+    return static_file('index.html', root=STATIC_PATH)
+
+
+@route('/<filename:re:.*\.(html|js|css)>')
+def index(filename):
+    return static_file(filename, root=STATIC_PATH)
 
 
 @route('/status')
 def status():
-    return STATE
+    return sc.state
 
 
-@route('/1/0')
-def socket1off():
-    STATE[1] = not pimote.switch('1-off')
-    return STATE
+@route('/sockets')
+def status():
+    return {
+        1: config.SOCKET_NAMES[0],
+        2: config.SOCKET_NAMES[1],
+        3: config.SOCKET_NAMES[2],
+        4: config.SOCKET_NAMES[3],
+    }
 
 
-@route('/1/1')
-def socket1on():
-    STATE[1] = pimote.switch('1-on')
-    return STATE
+@route('/<socket:re:([1234]|all)>/<state:re:[01]>')
+def switch_socket(socket, state):
+    """
+    define catch all endpoint for sending signals to sockets like:
+    /1/1  => turn_1_on
+    /1/0  => turn_1_off
+    """
+    method = "switch_%s_%s" % (socket, ('on' if state == '1' else 'off'))
+    getattr(sc, method)()
+    return sc.state
 
 
-@route('/2/0')
-def socket2off():
-    STATE[2] = not pimote.switch('2-off')
-    return STATE
+if __name__ == "__main__":
+    # Init SocketController and Run server
+    sc.start()
+    run(host='0.0.0.0', port=8080)
 
-
-@route('/2/1')
-def socket2on():
-    STATE[2] = pimote.switch('2-on')
-    return STATE
-
-
-@route('/3/0')
-def socket3off():
-    STATE[3] = not pimote.switch('3-off')
-    return STATE
-
-
-@route('/3/1')
-def socket3on():
-    STATE[3] = pimote.switch('3-on')
-    return STATE
-
-
-@route('/4/0')
-def socket4off():
-    STATE[4] = not pimote.switch('4-off')
-    return STATE
-
-
-@route('/4/1')
-def socket4on():
-    STATE[4] = pimote.switch('4-on')
-    return STATE
-
-
-# Run server
-run(host='0.0.0.0', port=8080)
-
-# Clean up
-pimote.term()
+    # Clean up
+    sc.stop()
