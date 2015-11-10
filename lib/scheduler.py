@@ -57,7 +57,15 @@ class Scheduler(object):
         for e in events:
             if e.end.datetime >= now:
                 if e.uid in self._queued_actions:
+                    stdout.write('%s : Event rescheduled %s\n' %
+                                 (now.isoformat(), e.uid))
                     start_action, end_action = self._queued_actions[e.uid]
+                    if (start_action.scheduledTime < now and
+                        e.begin.datetime > now):
+                        # if active event is rescheduled to the future then end
+                        # it immediately and requeue the start action
+                        end_action.execute()
+                        self._action_queue.append(start_action)
                     start_action.scheduledTime = e.begin.datetime
                     end_action.scheduledTime = e.end.datetime
                 elif e.name in self.action_dict:
@@ -78,6 +86,9 @@ class Scheduler(object):
         while (len(self._action_queue) and
                self._action_queue[-1].scheduledTime <= now):
             next_action = self._action_queue.pop()
+            if next_action == self._queued_actions[next_action.uid][1]:
+                # if it's the end action
+                del self._queued_actions[next_action.uid]
             next_action.execute()
 
     def _scheduler_loop(self):

@@ -44,6 +44,6 @@ crontab task using curl like:
     curl http://<socket_control_host>/1/1  # turn socket one on
     curl http://<socket_control_host>/1/0  # turn socket one off
 
-Sample Screenshot of the
+Sample Screenshot of the front end on mobile:
 
 ![screenshot](https://raw.githubusercontent.com/nat-n/socket_control/master/screenshot.png)

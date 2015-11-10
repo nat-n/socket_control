@@ -1,5 +1,8 @@
 import RPi.GPIO as GPIO
 import time
+from sys import stdout
+from datetime import datetime, timedelta
+import pytz
 
 """
 This module provides a minimalistic abstraction around the GPIO control
@@ -52,6 +55,7 @@ def term():
 
 def switch(code):
     a, b, c, d = [bool(c) for c in CODES[code]]
+    t = datetime.utcnow().replace(tzinfo = pytz.utc)
     stdout.write('%s : Sending code %d%d%d%d\n' %
                  (t.isoformat(), int(a), int(b), int(c), int(d)))
     try:
