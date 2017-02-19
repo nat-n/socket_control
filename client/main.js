@@ -1,24 +1,27 @@
 (function (document, $, bindTap) {
   'use strict';
-  var state, elems, control, i, control_count = 4;
 
   // State tracking, should mirror the backend
-  state = [];
+  var state = [],
+      controlCount = 4;
 
-  // Cache DOM elements
-  elems = {};
-  for (i = 1; i <= control_count; i += 1) {
-    control         = document.getElementById('control-' + i);
-    elems[i]        = {};
-    elems[i].on     = control.getElementsByClassName('on')[0];
-    elems[i].off    = control.getElementsByClassName('off')[0];
-    elems[i].toggle = control;
-    elems[i].label  = control.getElementsByClassName('socket-name')[0];
+  function cacheDOMElements() {
+    var control, elems = {};
+    for (var i = 1; i <= controlCount; i += 1) {
+      control         = document.getElementById('control-' + i);
+      elems[i]        = {};
+      elems[i].on     = control.getElementsByClassName('on')[0];
+      elems[i].off    = control.getElementsByClassName('off')[0];
+      elems[i].toggle = control;
+      elems[i].label  = control.getElementsByClassName('socket-name')[0];
+    }
+
+    return elems;
   }
+  var elems = cacheDOMElements();
 
-  var socketNames;
   $.get('/sockets', function (socketNames) {
-    for (i = 1; i <= control_count; i += 1) {
+    for (var i = 1; i <= controlCount; i += 1) {
       if (socketNames[i]) {
         elems[i].label.innerText = i + '. ' + socketNames[i];
       }
@@ -27,15 +30,14 @@
 
   // Updates state and display, in response to updates from the backend
   function statusCallback(response) {
-    var j;
-    for (j = 1; j <= control_count; j += 1) {
-      state[j] = response[j];
-      if (state[j]) {
-        elems[j].on.classList.add('btn-success');
-        elems[j].off.classList.remove('btn-danger');
+    for (var i = 1; i <= controlCount; i += 1) {
+      state[i] = response[i];
+      if (state[i]) {
+        elems[i].on.classList.add('btn-success');
+        elems[i].off.classList.remove('btn-danger');
       } else {
-        elems[j].on.classList.remove('btn-success');
-        elems[j].off.classList.add('btn-danger');
+        elems[i].on.classList.remove('btn-success');
+        elems[i].off.classList.add('btn-danger');
       }
     }
   }
@@ -47,7 +49,7 @@
   function set(number, on) {
     if (number === parseInt(number, 10) &&
         number >= 1 &&
-        number <= control_count) {
+        number <= controlCount) {
       if (on) {
         $.get('/' + number + '/1', null, statusCallback);
       } else {
@@ -81,7 +83,7 @@
       toggle(i);
     });
   }
-  for (i = 1; i <= control_count; i += 1) {
+  for (var i = 1; i <= controlCount; i += 1) {
     bindControls(i);
   }
 

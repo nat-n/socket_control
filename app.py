@@ -21,6 +21,11 @@ def index(filename):
     return static_file(filename, root=STATIC_PATH)
 
 
+@route('/manifest.appcache')
+def manifest():
+    return static_file('manifest.appcache', root=STATIC_PATH, mimetype='text/cache-manifest')
+
+
 @route('/status')
 def status():
     return sc.state
